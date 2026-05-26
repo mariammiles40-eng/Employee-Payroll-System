@@ -1,0 +1,491 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{longtable,booktabs,array}
+\newcounter{none} % for unnumbered tables
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\author{}
+\date{}
+
+\begin{document}
+
+\textbf{KYAMBOGO}\includegraphics[width=1.54722in,height=1.16944in]{./media/image1.png}
+\textbf{UNIVERSITY}
+
+\textbf{BACHELOR OF ENGINEERING IN MECHATRONICS AND BIOMEDICAL
+ENGINEERING.}
+
+\textbf{TEMB 1202: COMPUITING II}
+
+\textbf{ASSIGNMENT: EMPLOYEE PAYROLL SYSTEM}
+
+\textbf{DATE: 27\textsuperscript{TH} MAY, 2026}
+
+\textbf{GROUP D EVENING}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.4952}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5048}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\centering
+\textbf{NAME}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\centering
+\textbf{REGISTRATION NUMBER}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+KATONGOLE SHADDAI KISA & 25/U/BIE/01380/PE \\
+ZALWANGO CHRISTINE & 25/U/BIE/01426/PE \\
+MUTYABA DERICK & 25/U/BIE/01399/PE \\
+NAKANWAGI MARIAM & 25/U/BIE/01403/PE \\
+BUJINGO DAVID KABANDA & 25/U/BIE/01364/PE \\
+RWOTOMIA PIUS EMMANUEL & 25/U/BIE/01419/PE \\
+\end{longtable}
+}
+
+\textbf{INTRODUCTION}
+
+This report documents the design and implementation of an Employee
+Payroll System written in the C programming language. The system is a
+fully menu-driven console application that enables payroll officers to
+manage employee records, compute salaries with overtime, apply statutory
+deductions, and generate comprehensive payroll reports. It demonstrates
+practical application of C programming concepts including structures,
+arrays, functions, pointers, loops, and conditional logic. The program
+runs continuously until the user selects Exit, and requires login
+authentication before any payroll operations can be performed. All
+inputs are validated against defined business rules to prevent incorrect
+salary calculations
+
+\textbf{PROBLEM STATEMENT}
+
+An organization needs a digital payroll system to replace manual salary
+processing. The system must handle the complete payroll lifecycle from
+registering employees to computing gross pay, applying deductions,
+calculating net pay, and producing summary reports while enforcing the
+company\textquotesingle s payroll rules.
+
+\textbf{Required Operations}
+
+\begin{itemize}
+\item
+  Register new employees with name, department, hourly rate, and hours
+  worked.
+\item
+  Search existing employee records by name or employee ID.
+\item
+  Update employee details including rate, hours worked, and department.
+\item
+  Delete employee records for staff who have left the organization.
+\item
+  Calculate salaries, gross pay, overtime, deductions, and net pay.
+\item
+  Display a complete payroll summary report identifying the highest-paid
+  employee.
+\end{itemize}
+
+\textbf{Business rules}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Normal hours limit
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Normal working hours are capped at 160 hours/month.
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Overtime pays & Hours above 160 are paid at 1.5* the base hourly
+rate. \\
+Excessive hours warning & Hours above 300 trigger a visible warning
+message. \\
+Deductions on Gross pay & Tax 30\%, NSSF 5\%, Health insurance 2\% of
+gross pay. \\
+Negative input rejection & Negative hours or rates are rejected with an
+error. \\
+Highest-paid employee & The report identifies the employee with highest
+net pay. \\
+\end{longtable}
+}
+
+\textbf{SYSTEM FEATURES AND FUNCTIONALITY}
+
+Authentication On launch the system presents a login prompt. After three
+consecutive failed attempts access is denied and the program exits,
+preventing unauthorized access.
+
+\textbf{Main menu}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.4911}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.4911}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Feature
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Description
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Registration employee & Add a new employee record \\
+Search employee & Find by name or ID \\
+Update employee & Modify rate, hours, or department \\
+Delete employee & Remove a record permanently \\
+Calculate all salaries & Refresh payroll for all employees \\
+Display payroll report & Full summary + highest-paid employee \\
+Exit & Logout and close the system \\
+\end{longtable}
+}
+
+\textbf{Salary Calculation Steps}
+
+{\def\LTcaptype{none} % do not increment counter
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3202}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3203}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3203}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Step
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Item
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Formula
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Step 1 & Normal pay & Hours \textless=160 - Hours × Rate \\
+Step 2 & Overtime pays & (Hours - 160) × Rate × 1.5 \\
+Step 3 & Gross pay & Normal pay + Overtime pay \\
+Step 4 & Tax & Gross × 30\% \\
+Step 5 & NSSF & Gross × 5\% \\
+Step 6 & Health ins & Gross × 2\% \\
+Step 7 & Total deductions & Tax + NSSF + Health insurance \\
+Step 8 & Net pay & Gross pay -- Total deductions \\
+\end{longtable}
+}
+
+\textbf{PROGRAM DESIGN AND STRUCTURE}
+
+\textbf{Data Structure}
+
+The central data structure is a C \textbf{struct} called
+\textbf{Employee}. An array of up to MAX\_EMPLOYEES (100) of this struct
+acts as the in-memory database.
+
+typedef struct \{
+
+int empID;
+
+char name{[}60{]};
+
+char department{[}40{]};
+
+float hourlyRate;
+
+float hoursWorked;
+
+float normalPay;
+
+float overtimePay;
+
+float grossPay;
+
+float taxAmount;
+
+float nssfAmount;
+
+float healthAmount;
+
+float totalDeductions;
+
+float netPay;
+
+int overtimeFlag;
+
+int excessiveFlag;
+
+\} Employee;
+
+\textbf{Constants}
+
+\#define MAX\_EMPLOYEES 100
+
+\#define NORMAL\_HOURS 160.0f
+
+\#define EXCESSIVE\_HOURS 300.0f
+
+\#define OT\_MULTIPLIER 1.5f
+
+\#define TAX\_RATE 0.30f
+
+\#define NSSF\_RATE 0.05f
+
+\#define HEALTH\_RATE 0.02f
+
+\#define ID\_BASE 100
+
+\textbf{IMPORTANT FUNCTIONS USED}
+
+login()
+
+Signature: void login(void)
+
+Handles authentication. Allows 3 attempts then exits. First function
+called in main().
+
+registerEmployee()
+
+Signature: void registerEmployee(void)
+
+Collects employee data, validates negatives, auto-assigns ID, calls
+calculateSalary().
+
+searchEmployee()
+
+Signature: void searchEmployee(void)
+
+Finds by case-insensitive name (partial match) or exact ID. Displays
+full record.
+
+updateEmployee()
+
+Signature: void updateEmployee(void)
+
+Updates rate, hours, department, or all fields. Recalculates salary
+after change.
+
+deleteEmployee()
+
+Signature: void deleteEmployee(void)
+
+Confirms deletion, removes record by array shifting, decrements count.
+
+calculateSalary()
+
+Signature: void calculateSalary(Employee *emp)
+
+Core computation: normal pay, overtime, gross pay, all deductions, net
+pay, flags.
+
+calculateAllSalaries()
+
+Signature: void calculateAllSalaries(void)
+
+Loops through all employees and calls calculateSalary() on each record.
+
+displayPayrollReport()
+
+Signature: void displayPayrollReport(void)
+
+Prints formatted table, totals, highest-paid employee, and deduction
+rates used.
+
+displayEmployee()
+
+Signature: void displayEmployee(Employee *emp)
+
+Prints a single employee\textquotesingle s complete payroll breakdown
+neatly.
+
+findByID()
+
+Signature: int findByID(int id)
+
+Linear search returning array index for matching empID, or -1 if not
+found.
+
+findByName()
+
+Signature: int findByName(const char *query)
+
+Case-insensitive partial string match using strstr(). Returns first
+matching index.
+
+clearBuffer()
+
+Signature: void clearBuffer(void)
+
+Flushes stdin after scanf() to prevent stale newline issues.
+
+toLowerCase() Signature: void toLowerCase(char *str, char *out)
+
+Converts string to lowercase for case-insensitive comparisons.
+
+printDivider()
+
+Signature: void printDivider(char ch, int len)
+
+Prints a horizontal line of a given character --- used for consistent UI
+formatting
+
+\textbf{DESIGN DECISIONS AND JUSTIFICATIONS}
+
+Storing All Computed Fields in the Struct
+
+grossPay, deductions, netPay, overtimeFlag, and excessiveFlag are stored
+in the Employee struct rather than recalculated on demand. This ensures
+every display function reads consistent values and avoids duplicating
+the calculation logic.
+
+\#define Constants for All Rates
+
+Using named constants (TAX\_RATE, OT\_MULTIPLIER, etc.) rather than
+magic numbers makes the code self-documenting. Changing a statutory rate
+requires editing one line only, which is essential for payroll software
+where rates change annually.
+
+calculateSalary() Called at Registration and After Updates
+
+Isolating the calculation in its own function and calling it both on
+registration and after every update guarantees that stored figures are
+always current. Without this, updating an hourly rate would leave stale
+net pay values.
+
+Employee IDs Starting at 1001 Starting IDs at 1001 produces
+professional-looking employee numbers clearly distinct from array
+indices, reducing off-by-one confusion.
+
+fgets for Name Input
+
+fgets() reads full lines including spaces, so "John Doe" is captured
+correctly instead of being truncated at the space by scanf("\%s").
+
+Global Array Instead of Linked List
+
+An array is simpler to implement using the C concepts covered in this
+course, provides O(1) indexed access, and is adequate for up to 100
+employees. A linked list would be preferable for very large, dynamic
+datasets
+
+\textbf{CHALLENGES ENCOUNTERED}
+
+Reading Names with Spaces
+
+scanf("\%s") stops at spaces. We switched to fgets() and stripped the
+trailing newline with strcspn() to correctly capture full names like
+"John Doe".
+
+Stale Salary After Updates
+
+Early versions did not recalculate salary after an update. We fixed this
+by always calling calculateSalary() at the end of updateEmployee().
+
+Input Buffer Contamination
+
+Mixing scanf() for numbers and fgets() for strings caused empty reads. A
+clearBuffer() helper that consumes remaining characters resolved this.
+
+Case-Insensitive Search
+
+The standard strcmp() is case-sensitive. We implemented toLowerCase()
+and used strstr() to support partial, case-insensitive name searches.
+
+Safe Report When List is Empty
+
+Accessing employees{[}0{]} when empCount is 0 causes undefined
+behaviour. We added a guard (if empCount == 0) before entering the
+report loop.
+
+GitHub Merge Conflicts
+
+Multiple members editing the same struct definition caused conflicts. We
+resolved this by agreeing on the final struct layout first and
+committing it before branching for individual functions
+
+\textbf{CONCLUSION}
+
+The Employee Payroll System was successfully designed, implemented, and
+tested as a fully functional menu-driven C program satisfying all
+requirements of the assignment. All business rules were enforced: normal
+hours are capped at 160/month, overtime is paid at 1.5× the base rate,
+hours above 300 trigger a visible warning, deductions (tax 30\%, NSSF
+5\%, health 2\%) are computed on gross pay, negative inputs are
+rejected, and the payroll report correctly identifies the highest-paid
+employee. This project provided valuable hands-on experience translating
+real-world business requirements into working software, reinforced core
+C programming skills, and built collaborative development habits through
+GitHub version control.
+
+\end{document}

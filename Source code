@@ -1,0 +1,479 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+/*  Constants  */
+#define MAX_EMPLOYEES    100
+#define NORMAL_HOURS     160.0f   /* Monthly normal hours limit      */
+#define EXCESSIVE_HOURS  300.0f   /* Threshold for excessive warning */
+#define OT_MULTIPLIER    1.5f     /* Overtime pay multiplier         */
+#define TAX_RATE         0.30f    /* Income tax  : 30% of gross      */
+#define NSSF_RATE        0.05f    /* NSSF contrib: 5%  of gross      */
+#define HEALTH_RATE      0.02f    /* Health ins  : 2%  of gross      */
+#define ID_BASE          1001     /* First employee ID               */
+
+/*  Data Structure  */
+typedef struct {
+    int   empID;
+    char  name[60];
+    char  department[40];
+    float hourlyRate;
+    float hoursWorked;
+    float normalPay;
+    float overtimePay;
+    float grossPay;
+    float taxAmount;
+    float nssfAmount;
+    float healthAmount;
+    float totalDeductions;
+    float netPay;
+    int   overtimeFlag;
+    int   excessiveFlag;
+} Employee;
+Employee employees[MAX_EMPLOYEES];
+int      empCount = 0;
+/*  Function Prototypes  */
+void  login(void);
+void  displayMenu(void);
+void  registerEmployee(void);
+void  searchEmployee(void);
+void  updateEmployee(void);
+void  deleteEmployee(void);
+void  calculateSalary(Employee *emp);
+void  calculateAllSalaries(void);
+void  displayPayrollReport(void);
+void  displayEmployee(Employee *emp);
+int   findByID(int id);
+int   findByName(const char *name);
+void  clearBuffer(void);
+void  toLowerCase(char *str, char *out);
+void  printDivider(char ch, int len);
+
+int main(void) {
+    int choice;
+    login();
+    do {
+        displayMenu();
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+        clearBuffer();
+        switch (choice) {
+            case 1: registerEmployee();    break;
+            case 2: searchEmployee();      break;
+            case 3: updateEmployee();      break;
+            case 4: deleteEmployee();      break;
+            case 5: calculateAllSalaries(); break;
+            case 6: displayPayrollReport(); break;
+            case 0:
+                printf("\nThank you for using our Payroll System.");
+                break;
+            default:
+                printf("\nInvalid choice. Please enter 0-6.\n");
+        }
+    } while (choice != 0);
+    return 0;
+}
+
+void login(void) {
+    char  user[30], pass[30];
+    const char *VALID_USER = "admin";
+    const char *VALID_PASS = "payroll2026";
+    int   attempts = 0;
+    printDivider('=', 50);
+    printf("   EMPLOYEE PAYROLL SYSTEM KYAMBOGO UNIVERSITY\n");
+    printf("   Group D Evening  |  TEMB 1202 Computing II\n");
+    printDivider('=', 50);
+    while (attempts < 3) {
+        printf("\nUsername : ");
+        scanf("%s", user);
+        printf("Password : ");
+        scanf("%s", pass);
+        clearBuffer();
+        if (strcmp(user, VALID_USER) == 0 &&
+            strcmp(pass, VALID_PASS) == 0) {
+            printf("\nLogin successful. %s!\n", user);
+            return;
+        }
+        attempts++;
+        if (attempts < 3)
+            printf("Incorrect credentials. %d attempt(s) remaining.\n",
+                   3 - attempts);
+    }
+    printf("\nAccess denied after 3 failed attempts. Exiting.\n");
+    exit(0);
+}
+void displayMenu(void) {
+    printf("\n");
+    printDivider('-', 45);
+    printf("   MAIN MENU\n");
+    printDivider('-', 45);
+    printf("  1. Register Employee\n");
+    printf("  2. Search Employee\n");
+    printf("  3. Update Employee Details\n");
+    printf("  4. Delete Employee Record\n");
+    printf("  5. Calculate All Salaries\n");
+    printf("  6. Display Payroll Report\n");
+    printf("  0. Exit\n");
+    printDivider('-', 45);
+}
+void registerEmployee(void) {
+    if (empCount >= MAX_EMPLOYEES) {
+        printf("\nERROR: Employee list is full (%d max).\n",
+               MAX_EMPLOYEES);
+        return;
+    }
+    Employee *e = &employees[empCount];
+    printf("\n--- Register New Employee ---\n");
+    e->empID = ID_BASE + empCount;
+    printf("Full Name        : ");
+    fgets(e->name, sizeof(e->name), stdin);
+    /* Remove trailing newline */
+    e->name[strcspn(e->name, "\n")] = '\0';
+    printf("Department       : ");
+    fgets(e->department, sizeof(e->department), stdin);
+    e->department[strcspn(e->department, "\n")] = '\0';
+    printf("Hourly Rate (UGX): ");
+    scanf("%f", &e->hourlyRate);
+    clearBuffer();
+    printf("Hours Worked     : ");
+    scanf("%f", &e->hoursWorked);
+    clearBuffer();
+    /*  Input validation  */
+    if (e->hourlyRate < 0) {
+        printf("ERROR: Hourly rate cannot be negative. "
+               "Employee not registered.\n");
+        return;
+    }
+    if (e->hoursWorked < 0) {
+        printf("ERROR: Hours worked cannot be negative. "
+               "Employee not registered.\n");
+        return;
+    }
+    /* Compute salary immediately on registration */
+    calculateSalary(e);
+    empCount++;
+    printf("\nEmployee registered successfully!\n");
+    printf("Assigned Employee ID : %d\n", e->empID);
+    printf("Net Pay this month   : UGX %.2f\n", e->netPay);
+}
+void searchEmployee(void) {
+    int  choice, id, idx;
+    char nameQuery[60];
+    printf("\n--- Search Employee ---\n");
+    printf("Search by:\n  1. Employee Name\n  2. Employee ID\n");
+    printf("Choice: ");
+    scanf("%d", &choice);
+    clearBuffer();
+    if (choice == 1) {
+        printf("Enter name to search: ");
+        fgets(nameQuery, sizeof(nameQuery), stdin);
+        nameQuery[strcspn(nameQuery, "\n")] = '\0';
+        idx = findByName(nameQuery);
+        if (idx == -1) {
+            printf("\nNo employee found with name containing '%s'.\n",
+                   nameQuery);
+        } else {
+               printf("\nEmployee found:\n");
+            displayEmployee(&employees[idx]);
+        }
+    } else if (choice == 2) {
+        printf("Enter Employee ID: ");
+        scanf("%d", &id);
+        clearBuffer();
+        idx = findByID(id);
+        if (idx == -1) {
+            printf("\nNo employee found with ID %d.\n", id);
+        } else {
+            printf("\nEmployee found:\n");
+            displayEmployee(&employees[idx]);
+        }
+    } else {
+        printf("Invalid choice.\n");
+    }
+}
+void updateEmployee(void) {
+    int  id, idx, field;
+    char newDept[40];
+    float newRate, newHours;
+    printf("\n--- Update Employee ---\n");
+    printf("Enter Employee ID to update: ");
+    scanf("%d", &id);
+    clearBuffer();
+    idx = findByID(id);
+    if (idx == -1) {
+        printf("ERROR: Employee with ID %d not found.\n", id);
+        return;
+    }
+    printf("\nUpdating: %s (ID: %d)\n",
+           employees[idx].name, employees[idx].empID);
+    printf("What would you like to update?\n");
+    printf("  1. Hourly Rate\n");
+    printf("  2. Hours Worked\n");
+    printf("  3. Department\n");
+    printf("  4. Update All Fields\n");
+    printf("Choice: ");
+    scanf("%d", &field);
+    clearBuffer();
+    switch (field) {
+        case 1:
+            printf("New Hourly Rate (UGX): ");
+            scanf("%f", &newRate);
+            clearBuffer();
+            if (newRate < 0) {
+                printf("ERROR: Hourly rate cannot be negative.\n");
+                return;
+            }
+            employees[idx].hourlyRate = newRate;
+            break;
+         case 2:
+            printf("New Hours Worked: ");
+            scanf("%f", &newHours);
+            clearBuffer();
+            if (newHours < 0) {
+                printf("ERROR: Hours worked cannot be negative.\n");
+                return;
+            }
+            employees[idx].hoursWorked = newHours;
+            break;
+        case 3:
+            printf("New Department: ");
+            fgets(newDept, sizeof(newDept), stdin);
+            newDept[strcspn(newDept, "\n")] = '\0';
+            strcpy(employees[idx].department, newDept);
+            break;
+        case 4:
+            printf("New Hourly Rate (UGX): ");
+            scanf("%f", &newRate);
+            clearBuffer();
+            printf("New Hours Worked    : ");
+            scanf("%f", &newHours);
+            clearBuffer();
+            printf("New Department      : ");
+            fgets(newDept, sizeof(newDept), stdin);
+            newDept[strcspn(newDept, "\n")] = '\0';
+            if (newRate < 0 || newHours < 0) {
+                printf("ERROR: Negative values are not allowed.\n");
+                return;
+            }
+            employees[idx].hourlyRate  = newRate;
+            employees[idx].hoursWorked = newHours;
+            strcpy(employees[idx].department, newDept);
+            break;
+        default:
+            printf("Invalid choice. No changes made.\n");
+            return;
+    }
+    /* Recalculate salary after any update */
+    calculateSalary(&employees[idx]);
+    printf("\nEmployee updated successfully.\n");
+    printf("Recalculated Net Pay : UGX %.2f\n", employees[idx].netPay);
+}
+void deleteEmployee(void) {
+    int  id, idx;
+    char confirm;
+    printf("\n--- Delete Employee ---\n");
+    printf("Enter Employee ID to delete: ");
+    scanf("%d", &id);
+    clearBuffer();
+      idx = findByID(id);
+    if (idx == -1) {
+        printf("ERROR: Employee with ID %d not found.\n", id);
+        return;
+    }
+    printf("\nAre you sure you want to delete '%s' (ID: %d)? (y/n): ",
+           employees[idx].name, id);
+    scanf("%c", &confirm);
+    clearBuffer();
+    if (tolower(confirm) != 'y') {
+        printf("Deletion cancelled.\n");
+        return;
+    }
+    /* Shift all records after idx one position left */
+    for (int i = idx; i < empCount - 1; i++) {
+        employees[i] = employees[i + 1];
+    }
+    empCount--;
+    printf("Employee (ID: %d) deleted successfully.\n", id);
+    printf("Total employees remaining: %d\n", empCount);
+}
+void calculateSalary(Employee *emp) {
+    /*  Input guard  */
+    if (emp->hourlyRate < 0 || emp->hoursWorked < 0) {
+        printf("ERROR: Cannot calculate salary – negative value detected.\n");
+        return;
+    }
+    /*  Step 1 & 2: Normal pay and overtime pay  */
+    if (emp->hoursWorked <= NORMAL_HOURS) {
+        emp->normalPay   = emp->hoursWorked * emp->hourlyRate;
+        emp->overtimePay = 0.0f;
+        emp->overtimeFlag = 0;
+    } else {
+        emp->normalPay   = NORMAL_HOURS * emp->hourlyRate;
+        emp->overtimePay = (emp->hoursWorked - NORMAL_HOURS)
+                           * emp->hourlyRate * OT_MULTIPLIER;
+        emp->overtimeFlag = 1;
+    }
+    /*  Excessive hours check  */
+    if (emp->hoursWorked > EXCESSIVE_HOURS) {
+        emp->excessiveFlag = 1;
+        printf("\n  !! WARNING: %s has worked %.0f hours this month,\n"
+               "             which exceeds the safe limit of %.0f hours.\n"
+               "             Please review this record.\n",
+               emp->name, emp->hoursWorked, EXCESSIVE_HOURS);
+    } else {
+        emp->excessiveFlag = 0;
+    }
+    /*  Step 3: Gross pay  */
+       emp->grossPay = emp->normalPay + emp->overtimePay;
+    /*  Step 4-6: Deductions  */
+    emp->taxAmount    = emp->grossPay * TAX_RATE;
+    emp->nssfAmount   = emp->grossPay * NSSF_RATE;
+    emp->healthAmount = emp->grossPay * HEALTH_RATE;
+    /*  Step 7: Total deductions  */
+    emp->totalDeductions = emp->taxAmount
+                         + emp->nssfAmount
+                         + emp->healthAmount;
+    /*  Step 8: Net pay  */
+    emp->netPay = emp->grossPay - emp->totalDeductions;
+}
+void calculateAllSalaries(void) {
+    if (empCount == 0) {
+        printf("\nNo employees registered yet.\n");
+        return;
+    }
+    printf("\nCalculating salaries for all %d employee(s)...\n", empCount);
+    for (int i = 0; i < empCount; i++) {
+        calculateSalary(&employees[i]);
+    }
+    printf("All salaries calculated successfully.\n");
+}
+void displayPayrollReport(void) {
+    if (empCount == 0) {
+        printf("\nNo employee records to display.\n");
+        return;
+    }
+    float totalGross    = 0.0f;
+    float totalDeduct   = 0.0f;
+    float totalNet      = 0.0f;
+    int   topIdx        = 0;
+    int   overtimeCount = 0;
+    int   excessCount   = 0;
+    printf("\n");
+    printDivider('=', 78);
+    printf("  EMPLOYEE PAYROLL REPORT\n");
+    printDivider('=', 78);
+    /* Table header */
+    printf("%-6s %-20s %-12s %9s %9s %9s %9s  %s\n",
+           "ID", "Name", "Dept", "Gross", "Deduct",
+           "Net Pay", "Hours", "Flag");
+    printDivider('-', 78);
+    for (int i = 0; i < empCount; i++) {
+             Employee *e = &employees[i];
+        /* Determine flag label */
+        char flag[16] = "";
+        if (e->excessiveFlag)  strcpy(flag, "!! EXCESS");
+        else if (e->overtimeFlag) strcpy(flag, "OT");
+        /* Truncate long names for table alignment */
+        char shortName[21];
+        strncpy(shortName, e->name, 20);
+        shortName[20] = '\0';
+        char shortDept[13];
+        strncpy(shortDept, e->department, 12);
+        shortDept[12] = '\0';
+        printf("%-6d %-20s %-12s %9.0f %9.0f %9.0f %9.0f  %s\n",
+               e->empID, shortName, shortDept,
+               e->grossPay, e->totalDeductions,
+               e->netPay, e->hoursWorked, flag);
+        /* Running totals */
+        totalGross  += e->grossPay;
+        totalDeduct += e->totalDeductions;
+        totalNet    += e->netPay;
+        if (e->overtimeFlag)  overtimeCount++;
+        if (e->excessiveFlag) excessCount++;
+        /* Track highest-paid */
+        if (e->netPay > employees[topIdx].netPay) topIdx = i;
+    }
+    printDivider('-', 78);
+    /* Totals row */
+    printf("%-6s %-20s %-12s %9.0f %9.0f %9.0f\n",
+           "TOTAL", "", "", totalGross, totalDeduct, totalNet);
+    printDivider('=', 78);
+    /* Summary section */
+    printf("\n  PAYROLL SUMMARY\n");
+    printDivider('-', 45);
+    printf("  Total Employees        : %d\n", empCount);
+    printf("  Employees on Overtime  : %d\n", overtimeCount);
+    printf("  Excessive Hours Flags  : %d\n", excessCount);
+    printf("  Total Gross Payroll    : UGX %12.2f\n", totalGross);
+    printf("  Total Deductions       : UGX %12.2f\n", totalDeduct);
+    printf("  Total Net Payroll      : UGX %12.2f\n", totalNet);
+    printDivider('-', 45);
+    printf("  * HIGHEST-PAID EMPLOYEE *\n");
+    printf("  Name   : %s\n",   employees[topIdx].name);
+    printf("  ID     : %d\n",   employees[topIdx].empID);
+    printf("  Dept   : %s\n",   employees[topIdx].department);
+    printf("  Net Pay: UGX %.2f\n", employees[topIdx].netPay);
+    printDivider('=', 78);
+    /* Deductions breakdown notice */
+    printf("\n  Deduction Rates Applied:\n");
+    printf("    Income Tax      : %.0f%% of Gross Pay\n", TAX_RATE*100);
+    printf("    NSSF            : %.0f%% of Gross Pay\n", NSSF_RATE*100);
+      printf("    Health Insurance: %.0f%% of Gross Pay\n", HEALTH_RATE*100);
+    printf("    Overtime Rate   : %.1fx Base Hourly Rate\n", OT_MULTIPLIER);
+    printf("    Normal Hours Cap: %.0f hours/month\n", NORMAL_HOURS);
+    printDivider('=', 78);
+}
+void displayEmployee(Employee *emp) {
+    printDivider('-', 50);
+    printf("  Employee ID     : %d\n",    emp->empID);
+    printf("  Name            : %s\n",    emp->name);
+    printf("  Department      : %s\n",    emp->department);
+    printf("  Hourly Rate     : UGX %.2f\n", emp->hourlyRate);
+    printf("  Hours Worked    : %.2f hrs\n", emp->hoursWorked);
+    printDivider('-', 50);
+    printf("  Normal Pay      : UGX %.2f\n", emp->normalPay);
+    printf("  Overtime Pay    : UGX %.2f\n", emp->overtimePay);
+    printf("  Gross Pay       : UGX %.2f\n", emp->grossPay);
+    printDivider('-', 50);
+    printf("  Tax (30%%)       : UGX %.2f\n", emp->taxAmount);
+    printf("  NSSF (5%%)       : UGX %.2f\n", emp->nssfAmount);
+    printf("  Health Ins (2%%): UGX %.2f\n",  emp->healthAmount);
+    printf("  Total Deductions: UGX %.2f\n", emp->totalDeductions);
+    printDivider('-', 50);
+    printf("  NET PAY         : UGX %.2f\n", emp->netPay);
+    if (emp->overtimeFlag)
+        printf("  [Overtime recorded this month]\n");
+    if (emp->excessiveFlag)
+        printf("  [!! Excessive hours – please review]\n");
+    printDivider('-', 50);
+}
+int findByID(int id) {
+    for (int i = 0; i < empCount; i++) {
+        if (employees[i].empID == id) return i;
+    }
+    return -1;
+}
+int findByName(const char *query) {
+    char lQuery[60], lName[60];
+    toLowerCase((char *)query, lQuery);
+    for (int i = 0; i < empCount; i++) {
+        toLowerCase(employees[i].name, lName);
+        if (strstr(lName, lQuery) != NULL) return i;
+    }
+    return -1;
+}
+void clearBuffer(void) {
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+}
+void toLowerCase(char *str, char *out) {
+    int i;
+    for (i = 0; str[i] != '\0'; i++)
+        out[i] = (char)tolower((unsigned char)str[i]);
+    out[i] = '\0';
+}
+void printDivider(char ch, int len) {
+    for (int i = 0; i < len; i++) putchar(ch);
+    putchar('\n');
+}

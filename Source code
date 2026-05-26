@@ -5,13 +5,13 @@
 
 /*  Constants  */
 #define MAX_EMPLOYEES    100
-#define NORMAL_HOURS     160.0f   /* Monthly normal hours limit      */
-#define EXCESSIVE_HOURS  300.0f   /* Threshold for excessive warning */
-#define OT_MULTIPLIER    1.5f     /* Overtime pay multiplier         */
-#define TAX_RATE         0.30f    /* Income tax  : 30% of gross      */
-#define NSSF_RATE        0.05f    /* NSSF contrib: 5%  of gross      */
-#define HEALTH_RATE      0.02f    /* Health ins  : 2%  of gross      */
-#define ID_BASE          1001     /* First employee ID               */
+#define NORMAL_HOURS     160.0f   
+#define EXCESSIVE_HOURS  300.0f   
+#define OT_MULTIPLIER    1.5f     
+#define TAX_RATE         0.30f    
+#define NSSF_RATE        0.05f    
+#define HEALTH_RATE      0.02f    
+#define ID_BASE          1001     
 
 /*  Data Structure  */
 typedef struct {

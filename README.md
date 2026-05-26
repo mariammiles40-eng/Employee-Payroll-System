@@ -1,2 +1,22 @@
 # Employee-Payroll-System
-This report documents the design and implementation of an Employee Payroll System written in the C programming language. The system is a fully menu-driven console application that enables payroll officers to manage employee records, compute salaries with overtime, apply statutory deductions, and generate comprehensive payroll reports.
+##Description
+A menu-driven employee payroll system in c programming
+#Features
+Employee registration
+Salary calculation
+Overtime handling
+Payroll summaries
+File handling
+
+#Technologies used
+C programming language
+
+#How to compile
+gcc payroll.c -0 payroll
+
+#How to run
+./payroll
+
+##Login credentiatials
+Username: admin
+password: payroll2026

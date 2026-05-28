@@ -5,13 +5,13 @@
 
 /*  Constants  */
 #define MAX_EMPLOYEES    100
-#define NORMAL_HOURS     160.0f   
-#define EXCESSIVE_HOURS  300.0f   
-#define OT_MULTIPLIER    1.5f     
-#define TAX_RATE         0.30f    
-#define NSSF_RATE        0.05f    
-#define HEALTH_RATE      0.02f    
-#define ID_BASE          1001     
+#define NORMAL_HOURS     160.0f
+#define EXCESSIVE_HOURS  300.0f
+#define OT_MULTIPLIER    1.5f
+#define TAX_RATE         0.30f
+#define NSSF_RATE        0.05f
+#define HEALTH_RATE      0.02f
+#define ID_BASE          1001
 
 /*  Data Structure  */
 typedef struct {
@@ -298,44 +298,71 @@ void deleteEmployee(void) {
     printf("Total employees remaining: %d\n", empCount);
 }
 void calculateSalary(Employee *emp) {
-    /*  Input guard  */
+
+    /* Input validation */
     if (emp->hourlyRate < 0 || emp->hoursWorked < 0) {
-        printf("ERROR: Cannot calculate salary – negative value detected.\n");
+        printf("ERROR: Negative values detected.\n");
         return;
     }
-    /*  Step 1 & 2: Normal pay and overtime pay  */
+
+    /* Calculate normal and overtime pay */
     if (emp->hoursWorked <= NORMAL_HOURS) {
-        emp->normalPay   = emp->hoursWorked * emp->hourlyRate;
+
+        emp->normalPay = emp->hoursWorked * emp->hourlyRate;
+
         emp->overtimePay = 0.0f;
+
         emp->overtimeFlag = 0;
+
     } else {
-        emp->normalPay   = NORMAL_HOURS * emp->hourlyRate;
-        emp->overtimePay = (emp->hoursWorked - NORMAL_HOURS)
-                           * emp->hourlyRate * OT_MULTIPLIER;
+
+        float overtimeHours;
+
+        overtimeHours = emp->hoursWorked - NORMAL_HOURS;
+
+        emp->normalPay = NORMAL_HOURS * emp->hourlyRate;
+
+        emp->overtimePay = overtimeHours *
+                           (emp->hourlyRate * OT_MULTIPLIER);
+
         emp->overtimeFlag = 1;
     }
-    /*  Excessive hours check  */
+
+    /* Excessive hours warning */
     if (emp->hoursWorked > EXCESSIVE_HOURS) {
+
         emp->excessiveFlag = 1;
-        printf("\n  !! WARNING: %s has worked %.0f hours this month,\n"
+
+        printf("\n!! WARNING: %s has worked %.0f hours this month,\n"
                "             which exceeds the safe limit of %.0f hours.\n"
                "             Please review this record.\n",
-               emp->name, emp->hoursWorked, EXCESSIVE_HOURS);
+               emp->name,
+               emp->hoursWorked,
+               EXCESSIVE_HOURS);
+
     } else {
+
         emp->excessiveFlag = 0;
     }
-    /*  Step 3: Gross pay  */
-       emp->grossPay = emp->normalPay + emp->overtimePay;
-    /*  Step 4-6: Deductions  */
+
+    /* Gross pay */
+    emp->grossPay = emp->normalPay + emp->overtimePay;
+
+    /* Deductions */
     emp->taxAmount    = emp->grossPay * TAX_RATE;
     emp->nssfAmount   = emp->grossPay * NSSF_RATE;
     emp->healthAmount = emp->grossPay * HEALTH_RATE;
-    /*  Step 7: Total deductions  */
-    emp->totalDeductions = emp->taxAmount
-                         + emp->nssfAmount
-                         + emp->healthAmount;
-    /*  Step 8: Net pay  */
-    emp->netPay = emp->grossPay - emp->totalDeductions;
+
+    /* Total deductions */
+    emp->totalDeductions =
+        emp->taxAmount +
+        emp->nssfAmount +
+        emp->healthAmount;
+
+    /* Net pay */
+    emp->netPay =
+        emp->grossPay -
+        emp->totalDeductions;
 }
 void calculateAllSalaries(void) {
     if (empCount == 0) {
